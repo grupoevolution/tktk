@@ -9,37 +9,44 @@ import ShareSheet from "./ShareSheet";
 import Paywall from "./Paywall";
 
 // ============================================================================
-// Shuffle determinístico com seed (Mulberry32)
+// Utilitários de shuffle e rastreamento de vídeos assistidos
 // ============================================================================
-function mulberry32(seed: number) {
-  return function () {
-    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 function hashStr(s: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) | 0;
   return h >>> 0;
 }
 
-function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
-  const rand = mulberry32(seed);
+function shuffled<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }
 
-// Seed muda a cada "época" (bloco de N vídeos consumidos)
-// para que o mesmo usuário veja ordens diferentes conforme avança
-function computeSeed(email: string, epoch: number): number {
-  return hashStr(`${email}:${epoch}`);
+// Lê/salva lista de IDs já assistidos no localStorage
+function getWatched(key: string): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+  catch { return new Set(); }
+}
+function saveWatched(key: string, set: Set<string>) {
+  try { localStorage.setItem(key, JSON.stringify([...set])); } catch {}
+}
+
+// Monta playlist: não-assistidos embaralhados primeiro, depois assistidos embaralhados
+// Quando tudo foi assistido, zera e embaralha tudo de novo
+function buildPlaylist(videos: Video[], watchedKey: string): Video[] {
+  const watched = getWatched(watchedKey);
+  const unseen = videos.filter((v) => !watched.has(v.id));
+  const seen = videos.filter((v) => watched.has(v.id));
+  if (unseen.length === 0) {
+    // Todos assistidos: reseta e embaralha tudo
+    saveWatched(watchedKey, new Set());
+    return shuffled(videos);
+  }
+  return [...shuffled(unseen), ...shuffled(seen)];
 }
 
 // ============================================================================
@@ -70,34 +77,16 @@ export default function Feed({
   const [likes, setLikes] = useState<Record<string, LikeState>>({});
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
-  // Embaralha vídeos na montagem usando email como seed, avança pela época salva
+  // Monta playlist priorizando vídeos não assistidos
   useEffect(() => {
     if (!videos.length) return;
-    const EPOCH_SIZE = Math.max(videos.length, 20);
-    const storageKey = `tktk_epoch_${hashStr(email)}`;
-    const epoch = parseInt(localStorage.getItem(storageKey) || "0", 10);
-    const shuffled = shuffleWithSeed(videos, computeSeed(email, epoch));
-
-    // Quando o usuário chegar ao fim, incrementa a época para próxima sessão
-    const handleEpochAdvance = () => {
-      localStorage.setItem(storageKey, String(epoch + 1));
-    };
-
-    setSorted(shuffled);
-    setLikes(Object.fromEntries(shuffled.map((v) => [v.id, { liked: false, count: v.likes }])));
-    setCommentCounts(Object.fromEntries(shuffled.map((v) => [v.id, v.commentsCount])));
-
-    // Avança época quando usuário vê mais de 80% dos vídeos
-    const threshold = Math.floor(EPOCH_SIZE * 0.8);
-    let advanced = false;
-    const checkEpoch = (idx: number) => {
-      if (!advanced && idx >= threshold) {
-        advanced = true;
-        handleEpochAdvance();
-      }
-    };
-    // Expõe para o observer via ref
-    (window as any).__tktk_checkEpoch = checkEpoch;
+    const watchedKey = `tktk_watched_${hashStr(email)}`;
+    const playlist = buildPlaylist(videos, watchedKey);
+    setSorted(playlist);
+    setLikes(Object.fromEntries(playlist.map((v) => [v.id, { liked: false, count: v.likes }])));
+    setCommentCounts(Object.fromEntries(playlist.map((v) => [v.id, v.commentsCount])));
+    // Expõe chave para o observer marcar vídeos como assistidos
+    (window as any).__tktk_watchedKey = watchedKey;
   }, [videos, email]);
 
   // Observa qual slide está visível
@@ -111,7 +100,14 @@ export default function Feed({
             const idx = Number((e.target as HTMLElement).dataset.idx);
             setActive(idx);
             if (!hasAccess && idx >= freeLimit) setPaywall(true);
-            (window as any).__tktk_checkEpoch?.(idx);
+            // Marca vídeo como assistido no localStorage
+            const vid = sorted[idx];
+            const key = (window as any).__tktk_watchedKey;
+            if (vid && key) {
+              const w = getWatched(key);
+              w.add(vid.id);
+              saveWatched(key, w);
+            }
           }
         });
       },
