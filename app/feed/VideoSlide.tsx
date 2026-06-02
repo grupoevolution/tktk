@@ -94,7 +94,7 @@ export default function VideoSlide({
           ref={videoRef}
           loop
           playsInline
-          preload="metadata"
+          preload={active ? "auto" : "none"}
           poster={video.thumbnailUrl || undefined}
           className="h-full w-full object-cover"
           onDoubleClick={doubleTapLike}

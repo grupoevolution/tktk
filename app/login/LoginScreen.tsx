@@ -15,9 +15,10 @@ function GalleryCard({ item }: { item: Item }) {
     <div className="w-24 aspect-[9/16] rounded-xl overflow-hidden bg-neutral-900 shrink-0 relative">
       {item.thumb ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.thumb} alt="" className={cls} />
+        <img src={item.thumb} alt="" loading="lazy" decoding="async" className={cls} />
       ) : item.src ? (
-        <video src={item.src} muted loop autoPlay playsInline preload="metadata" className={cls} />
+        // sem thumbnail — carrega só metadados, sem autoplay para economizar banda
+        <video src={item.src} muted playsInline preload="none" className={cls} />
       ) : (
         <div className="w-full h-full bg-neutral-800" />
       )}
@@ -72,13 +73,15 @@ export default function LoginScreen({
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col justify-between px-6 pt-14 pb-8 bg-[#050506] overflow-hidden">
-      <div className="text-center shrink-0">
+    <div className="fixed inset-0 flex flex-col bg-[#050506] overflow-hidden">
+      {/* Topo */}
+      <div className="text-center shrink-0 pt-safe pt-10 pb-2 px-6 z-10">
         <Logo className="text-3xl" />
-        <p className="text-[12.5px] text-dim mt-2 tracking-wide">Acesso exclusivo · conteúdo +18</p>
+        <p className="text-[12px] text-dim mt-1.5 tracking-wide">Acesso exclusivo · conteúdo +18</p>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center gap-2 my-4 overflow-hidden gallery-mask">
+      {/* Galeria — cresce e ocupa o espaço disponível */}
+      <div className="flex-1 flex flex-col justify-center gap-2 overflow-hidden gallery-mask min-h-0 py-2">
         {rows.map((items, r) => (
           <div
             key={r}
@@ -92,29 +95,30 @@ export default function LoginScreen({
         ))}
       </div>
 
-      <form className="shrink-0" onSubmit={submit}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Digite o e-mail da sua compra"
-          className="w-full bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-4 text-[15px] outline-none focus:border-accent/60 mb-3"
-        />
-        {error && <p className="text-accent text-[13px] mb-2 text-center">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white disabled:opacity-60"
-          style={{ background: "linear-gradient(90deg,#ff1414,#cc0000)", boxShadow: "0 8px 28px rgba(255,0,0,.3)" }}
-        >
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-        <p className="text-[11px] text-white/40 mt-4 text-center leading-relaxed">
-          Conteúdo destinado a <b className="text-white/70">maiores de 18 anos</b>.
-          <br />
-          Ao entrar, você confirma ter 18+.
-        </p>
-      </form>
+      {/* Formulário fixo na base */}
+      <div className="shrink-0 px-5 pb-safe pb-6 pt-4 bg-gradient-to-t from-[#050506] via-[#050506]/95 to-transparent">
+        <form onSubmit={submit}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Digite o e-mail da sua compra"
+            className="w-full bg-white/[0.07] border border-white/15 rounded-2xl px-5 py-[15px] text-[15px] outline-none focus:border-white/35 mb-3"
+          />
+          {error && <p className="text-accent text-[13px] mb-2 text-center">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-[15px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-60"
+            style={{ background: "linear-gradient(90deg,#ff1414,#cc0000)", boxShadow: "0 6px 24px rgba(255,0,0,.35)" }}
+          >
+            {loading ? "Entrando..." : "Acessar conteúdo"}
+          </button>
+          <p className="text-[11px] text-white/35 mt-3.5 text-center leading-relaxed">
+            Conteúdo para <b className="text-white/55">maiores de 18 anos</b>. Ao entrar, você confirma ter 18+.
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
