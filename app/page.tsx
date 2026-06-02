@@ -16,7 +16,6 @@ export default async function Home() {
     const galleryItems = loginVideos.map((v) => ({
       src: v.hlsUrl,
       thumb: v.thumbnailUrl,
-      blur: v.blurInLogin,
     }));
     return <LoginScreen galleryItems={galleryItems} />;
   }
@@ -26,5 +25,5 @@ export default async function Home() {
     hasFullAccess(email).catch(() => false),
   ]);
 
-  return <Feed videos={videos} hasAccess={access} freeLimit={settings.freeLimit} />;
+  return <Feed videos={videos} hasAccess={access} freeLimit={settings.freeLimit} email={email} />;
 }

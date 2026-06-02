@@ -5,7 +5,7 @@ import type { Video, Comment } from "./types";
 
 const DATA_DIR =
   process.env.DATA_DIR ||
-  (process.env.NODE_ENV === "production" ? "/data" : path.join(process.cwd(), "data"));
+  (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
 
 function ensureDir() {
   try {
@@ -31,6 +31,15 @@ function writeJson(file: string, data: unknown) {
   } catch {}
 }
 
+// Gera curtidas base determinísticas (50–500) a partir do ID do vídeo
+function generateBaseLikes(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = Math.imul(31, h) + id.charCodeAt(i) | 0;
+  }
+  return 50 + Math.abs(h) % 451;
+}
+
 type DB = {
   videos: Video[];
   likes: string[];
@@ -44,6 +53,7 @@ function load(): DB {
       ...v,
       showInLogin: v.showInLogin ?? false,
       blurInLogin: v.blurInLogin ?? true,
+      baseLikes: v.baseLikes ?? generateBaseLikes(v.id),
     })),
     likes: readJson("likes.json", []),
     comments: readJson("comments.json", {}),
@@ -61,16 +71,14 @@ export async function listPublishedVideos(): Promise<Video[]> {
     .sort((a, b) => a.position - b.position)
     .map((v) => ({
       ...v,
-      likes: likes.filter((k) => k.startsWith(v.id + ":")).length,
+      likes: v.baseLikes + likes.filter((k) => k.startsWith(v.id + ":")).length,
       commentsCount: (comments[v.id] || []).length,
     }));
 }
 
 export async function listLoginVideos(): Promise<Video[]> {
   const { videos } = load();
-  return videos
-    .filter((v) => v.showInLogin)
-    .sort((a, b) => a.position - b.position);
+  return videos.filter((v) => v.showInLogin).sort((a, b) => a.position - b.position);
 }
 
 export async function listAllVideos(): Promise<Video[]> {
@@ -80,7 +88,7 @@ export async function listAllVideos(): Promise<Video[]> {
     .sort((a, b) => a.position - b.position)
     .map((v) => ({
       ...v,
-      likes: likes.filter((k) => k.startsWith(v.id + ":")).length,
+      likes: v.baseLikes + likes.filter((k) => k.startsWith(v.id + ":")).length,
       commentsCount: (comments[v.id] || []).length,
     }));
 }
@@ -91,17 +99,19 @@ export async function createVideo(input: {
   bunnyVideoId: string | null;
   hlsUrl: string | null;
   thumbnailUrl: string | null;
-  position: number;
   published: boolean;
   showInLogin: boolean;
   blurInLogin: boolean;
 }): Promise<Video> {
   const { videos } = load();
   const { hlsUrl: bunnyHls, thumbnailUrl: bunnyThumb } = bunnyUrls(input.bunnyVideoId);
+  const id = String(Date.now());
   const v: Video = {
-    id: String(Date.now()),
+    id,
     likes: 0,
     commentsCount: 0,
+    position: videos.length,
+    baseLikes: generateBaseLikes(id),
     ...input,
     hlsUrl: input.hlsUrl || bunnyHls,
     thumbnailUrl: input.thumbnailUrl || bunnyThumb,

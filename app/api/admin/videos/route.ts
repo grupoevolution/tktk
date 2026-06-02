@@ -23,7 +23,6 @@ export async function POST(req: Request) {
   const creatorName = String(body.creatorName || "").trim();
   const bunnyVideoId = body.bunnyVideoId ? String(body.bunnyVideoId).trim() : null;
   const hlsUrlInput = body.hlsUrl ? String(body.hlsUrl).trim() : null;
-  const position = Number(body.position || 0);
   const published = body.published !== false;
   const showInLogin = !!body.showInLogin;
   const blurInLogin = body.blurInLogin !== false;
@@ -40,7 +39,6 @@ export async function POST(req: Request) {
     bunnyVideoId,
     hlsUrl: hlsUrlInput || hlsUrl,
     thumbnailUrl,
-    position,
     published,
     showInLogin,
     blurInLogin,

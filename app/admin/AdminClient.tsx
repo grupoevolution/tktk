@@ -54,10 +54,8 @@ const emptyForm = {
   bunnyVideoId: "",
   hlsUrl: "",
   thumbnailUrl: "",
-  position: 0,
   published: true,
   showInLogin: false,
-  blurInLogin: true,
 };
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -90,10 +88,8 @@ function AdminPanel() {
       bunnyVideoId: v.bunnyVideoId || "",
       hlsUrl: v.hlsUrl || "",
       thumbnailUrl: v.thumbnailUrl || "",
-      position: v.position,
       published: v.published,
       showInLogin: v.showInLogin,
-      blurInLogin: v.blurInLogin,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -108,26 +104,16 @@ function AdminPanel() {
     e.preventDefault();
     setError("");
     setSaving(true);
-
-    if (editId) {
-      const res = await fetch("/api/admin/videos", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editId, ...form }),
-      });
-      setSaving(false);
-      if (res.ok) { cancelEdit(); load(); }
-      else setError((await res.json()).error || "Erro ao salvar");
-    } else {
-      const res = await fetch("/api/admin/videos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      setSaving(false);
-      if (res.ok) { setForm({ ...emptyForm }); load(); }
-      else setError((await res.json()).error || "Erro ao salvar");
-    }
+    const method = editId ? "PATCH" : "POST";
+    const body = editId ? { id: editId, ...form } : form;
+    const res = await fetch("/api/admin/videos", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    setSaving(false);
+    if (res.ok) { cancelEdit(); load(); }
+    else setError((await res.json()).error || "Erro ao salvar");
   }
 
   async function remove(id: string) {
@@ -141,7 +127,7 @@ function AdminPanel() {
     load();
   }
 
-  async function toggleField(v: Video, field: "published" | "showInLogin" | "blurInLogin") {
+  async function toggleField(v: Video, field: "published" | "showInLogin") {
     await fetch("/api/admin/videos", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -160,26 +146,21 @@ function AdminPanel() {
       </header>
 
       <div className="max-w-2xl mx-auto p-5 grid gap-6">
-
-        {/* Formulário */}
         <section className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
           <h2 className="font-semibold mb-4">{editId ? "Editar vídeo" : "Novo vídeo"}</h2>
           <form onSubmit={save} className="grid gap-3">
-
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                value={form.creatorName}
-                onChange={(e) => f("creatorName", e.target.value)}
-                placeholder="Nome do creator *"
-                className="bg-white/[0.06] border border-white/12 rounded-xl px-4 py-3 text-sm outline-none col-span-2"
-              />
-              <input
-                value={form.caption}
-                onChange={(e) => f("caption", e.target.value)}
-                placeholder="Legenda"
-                className="bg-white/[0.06] border border-white/12 rounded-xl px-4 py-3 text-sm outline-none col-span-2"
-              />
-            </div>
+            <input
+              value={form.creatorName}
+              onChange={(e) => f("creatorName", e.target.value)}
+              placeholder="Nome do creator *"
+              className="bg-white/[0.06] border border-white/12 rounded-xl px-4 py-3 text-sm outline-none"
+            />
+            <input
+              value={form.caption}
+              onChange={(e) => f("caption", e.target.value)}
+              placeholder="Legenda"
+              className="bg-white/[0.06] border border-white/12 rounded-xl px-4 py-3 text-sm outline-none"
+            />
 
             <div className="border border-white/8 rounded-xl p-4 grid gap-2">
               <p className="text-xs text-dim mb-1">Vídeo — preencha um dos dois:</p>
@@ -204,22 +185,8 @@ function AdminPanel() {
             </div>
 
             <div className="flex items-center gap-4 flex-wrap">
-              <input
-                type="number"
-                value={form.position}
-                onChange={(e) => f("position", Number(e.target.value))}
-                placeholder="Ordem"
-                className="bg-white/[0.06] border border-white/12 rounded-xl px-4 py-3 text-sm outline-none w-28"
-              />
               <Check label="Publicado no feed" checked={form.published} onChange={(v) => f("published", v)} />
-            </div>
-
-            <div className="border border-white/8 rounded-xl p-4 grid gap-2">
-              <p className="text-xs text-dim mb-1">Tela de login:</p>
-              <Check label="Mostrar na galeria do login" checked={form.showInLogin} onChange={(v) => f("showInLogin", v)} />
-              {form.showInLogin && (
-                <Check label="Embaçar no login (recomendado)" checked={form.blurInLogin} onChange={(v) => f("blurInLogin", v)} />
-              )}
+              <Check label="Mostrar na tela de login" checked={form.showInLogin} onChange={(v) => f("showInLogin", v)} />
             </div>
 
             {error && <p className="text-accent text-[13px]">{error}</p>}
@@ -242,7 +209,6 @@ function AdminPanel() {
           </form>
         </section>
 
-        {/* Lista */}
         <section className="grid gap-2">
           <h2 className="font-semibold mb-1">Vídeos cadastrados</h2>
           {videos.length === 0 && <p className="text-dim text-sm">Nenhum vídeo ainda.</p>}
@@ -256,11 +222,10 @@ function AdminPanel() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold truncate">{v.creatorName || "(sem nome)"}</div>
                   <div className="text-dim text-xs truncate mt-0.5">{v.caption || "sem legenda"}</div>
-                  <div className="text-white/30 text-xs mt-1">#{v.position} · ❤ {v.likes} · 💬 {v.commentsCount}</div>
+                  <div className="text-white/30 text-xs mt-1">❤ {v.baseLikes + v.likes} · 💬 {v.commentsCount}</div>
                 </div>
               </div>
 
-              {/* Badges de status */}
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => toggleField(v, "published")}
@@ -274,14 +239,6 @@ function AdminPanel() {
                 >
                   {v.showInLogin ? "✓ No login" : "Oculto do login"}
                 </button>
-                {v.showInLogin && (
-                  <button
-                    onClick={() => toggleField(v, "blurInLogin")}
-                    className={`text-xs px-3 py-1 rounded-full border transition ${v.blurInLogin ? "border-yellow-400/40 text-yellow-400 bg-yellow-500/10" : "border-white/20 text-dim"}`}
-                  >
-                    {v.blurInLogin ? "Embaçado" : "Sem blur"}
-                  </button>
-                )}
               </div>
 
               <div className="flex gap-2">
@@ -295,7 +252,6 @@ function AdminPanel() {
             </div>
           ))}
         </section>
-
       </div>
     </div>
   );
