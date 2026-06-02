@@ -4,7 +4,7 @@ import path from "path";
 
 export async function GET() {
   const DATA_DIR = process.env.DATA_DIR ||
-    (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
+    (process.env.NODE_ENV === "production" ? "/data" : path.join(process.cwd(), "data"));
 
   const result: Record<string, unknown> = {
     DATA_DIR,

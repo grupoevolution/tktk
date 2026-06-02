@@ -5,7 +5,7 @@ import type { Video, Comment } from "./types";
 
 const DATA_DIR =
   process.env.DATA_DIR ||
-  (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
+  (process.env.NODE_ENV === "production" ? "/data" : path.join(process.cwd(), "data"));
 
 function ensureDir() {
   try {
