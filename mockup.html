@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mockup — TKTK P🔞RN</title>
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --text: #ffffff;
+    --text-dim: #a1a1aa;
+    --accent-1: #ff2d55;
+    --accent-2: #ff6482;
+    --wa: #25d366;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+    background: radial-gradient(circle at 50% 30%, #18181b 0%, #050506 70%);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    gap: 56px; padding: 40px; color: var(--text); overflow-x: hidden;
+  }
+
+  /* ---------- Legenda lateral ---------- */
+  .legend { max-width: 270px; }
+  .legend h1 { font-size: 25px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .legend .tag {
+    display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent-2); border: 1px solid rgba(255,100,130,.3);
+    padding: 4px 10px; border-radius: 100px; margin-bottom: 18px;
+  }
+  .legend p { color: var(--text-dim); font-size: 13.5px; line-height: 1.6; margin-bottom: 14px; }
+  .legend ul { list-style: none; }
+  .legend li {
+    color: var(--text-dim); font-size: 13px; line-height: 1.5; padding: 7px 0;
+    border-top: 1px solid rgba(255,255,255,.06); display: flex; gap: 10px;
+  }
+  .legend li b { color: var(--text); font-weight: 600; }
+  .legend .demo-btns { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .legend .demo-btns button {
+    background: rgba(255,255,255,.06); color: var(--text); border: 1px solid rgba(255,255,255,.12);
+    padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    text-align: left; transition: background .2s;
+  }
+  .legend .demo-btns button:hover { background: rgba(255,255,255,.12); }
+
+  /* ---------- Moldura do telefone ---------- */
+  .phone {
+    position: relative; width: 380px; height: 800px; background: #000;
+    border-radius: 48px; border: 10px solid #1a1a1d;
+    box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 28px; background: #1a1a1d; border-radius: 0 0 18px 18px; z-index: 90;
+  }
+
+  /* ---------- Logo (reutilizado topo + login) ---------- */
+  .logo-text { font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; }
+  /* TKTK com efeito glitch TikTok (ciano + magenta/vermelho sobre branco) */
+  .logo-text .tk { color: #fff; text-shadow: -2px -1px 0 #25F4EE, 2px 1px 0 #FE2C55; }
+  /* P🔞RN em vermelho forte com brilho */
+  .logo-text .pn { color: #ff0d0d; text-shadow: 0 0 22px rgba(255,20,20,.6); }
+
+  /* ---------- Topo: nome fixo centralizado ---------- */
+  .brand {
+    position: absolute; top: 42px; left: 0; right: 0; z-index: 40;
+    text-align: center; font-size: 18px; text-shadow: 0 1px 10px rgba(0,0,0,.6); pointer-events: none;
+  }
+
+  /* ---------- Feed ---------- */
+  .feed { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+  .feed::-webkit-scrollbar { display: none; }
+  .slide {
+    position: relative; height: 100%; scroll-snap-align: start; scroll-snap-stop: always;
+    display: flex; align-items: center; justify-content: center; background: #000;
+  }
+  .slide video { width: 100%; height: 100%; object-fit: cover; }
+  .slide::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 28%, transparent 72%, rgba(0,0,0,.45) 100%);
+  }
+
+  .meta { position: absolute; left: 18px; bottom: 30px; z-index: 20; max-width: 64%; }
+  .meta .name { font-weight: 700; font-size: 16px; margin-bottom: 7px; }
+  .meta .caption { font-size: 14px; line-height: 1.4; color: rgba(255,255,255,.92); }
+
+  /* action rail — CENTRALIZADO verticalmente */
+  .rail {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 20;
+    display: flex; flex-direction: column; gap: 22px; align-items: center;
+  }
+  .action { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+  .action .btn {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: rgba(255,255,255,.12); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center; transition: transform .18s ease, background .2s;
+  }
+  .action:active .btn { transform: scale(.88); }
+  .action .btn svg { width: 27px; height: 27px; }
+  .action .count { font-size: 12.5px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
+  .action.liked .btn svg { fill: url(#likeGrad); stroke: none; animation: pop .35s ease; }
+  .action.liked .count { color: var(--accent-2); }
+  @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.35)} 100%{transform:scale(1)} }
+
+  .progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,.15); z-index: 25; }
+  .progress .fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); transition: width .1s linear; }
+
+  /* overlay ativar som */
+  .audio-gate {
+    position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px); cursor: pointer;
+  }
+  .audio-gate.hidden { display: none; }
+  .audio-gate .ring {
+    width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center; animation: breathe 2s ease-in-out infinite;
+  }
+  .audio-gate .ring svg { width: 36px; height: 36px; }
+  .audio-gate p { font-size: 14px; font-weight: 600; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  @keyframes breathe { 0%,100%{transform:scale(1); opacity:.9} 50%{transform:scale(1.08); opacity:1} }
+
+  .hint { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 30; font-size: 11px; color: rgba(255,255,255,.5); animation: bob 1.6s ease-in-out infinite; pointer-events: none; }
+  @keyframes bob { 0%,100%{transform:translate(-50%,0)} 50%{transform:translate(-50%,6px)} }
+
+  /* bottom sheet */
+  .sheet-backdrop { position: absolute; inset: 0; z-index: 70; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 71; background: #161618; border-radius: 22px 22px 0 0;
+    transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; max-height: 70%;
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet .grab { width: 38px; height: 4px; background: rgba(255,255,255,.25); border-radius: 4px; margin: 10px auto 4px; }
+  .sheet .sheet-head { text-align: center; font-size: 13.5px; font-weight: 600; padding: 6px 0 12px; border-bottom: 1px solid rgba(255,255,255,.07); color: var(--text-dim); }
+  .comments { overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .comment { display: flex; flex-direction: column; gap: 2px; }
+  .comment .c-name { font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+  .comment .c-text { font-size: 14px; line-height: 1.35; }
+  .comment-input { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid rgba(255,255,255,.08); background: #161618; }
+  .comment-input input { flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 100px; padding: 11px 16px; color: var(--text); font-size: 14px; outline: none; }
+  .comment-input input::placeholder { color: var(--text-dim); }
+  .comment-input button { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); border: none; color: #fff; border-radius: 100px; padding: 0 18px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .share-opts { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .share-opt { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; cursor: pointer; font-size: 14.5px; font-weight: 600; transition: background .2s; }
+  .share-opt:hover { background: rgba(255,255,255,.1); }
+  .share-opt .ic { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .share-opt .ic.wa { background: var(--wa); }
+  .share-opt .ic.link { background: rgba(255,255,255,.12); }
+  .share-opt small { display: block; font-weight: 400; color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+  /* paywall */
+  .paywall { position: absolute; inset: 0; z-index: 80; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 32px; text-align: center; background: rgba(10,10,11,.72); backdrop-filter: blur(14px); }
+  .paywall.open { display: flex; }
+  .paywall .lock { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .paywall h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
+  .paywall p { font-size: 14px; color: var(--text-dim); line-height: 1.5; max-width: 280px; margin-bottom: 14px; }
+  .paywall .cta { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); border: none; color: #fff; padding: 15px 34px; border-radius: 100px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
+  .paywall .ghost { margin-top: 10px; font-size: 13px; color: var(--text-dim); background: none; border: none; cursor: pointer; }
+
+  /* ---------- Login com galeria horizontal ---------- */
+  .login {
+    position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column;
+    justify-content: space-between; padding: 56px 26px 34px; text-align: center;
+    background: #050506; overflow: hidden;
+  }
+  .login.hidden { display: none; }
+  .login-top .logo-big { font-size: 30px; }
+  .login-top .tagline { font-size: 12.5px; color: var(--text-dim); margin-top: 8px; letter-spacing: .03em; }
+
+  /* galeria — 3 fileiras 9:16 rolando na horizontal (velocidades diferentes) */
+  .gallery {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; overflow: hidden; margin: 14px 0;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+  .gal-row { display: flex; gap: 8px; width: max-content; animation-timing-function: linear; animation-iteration-count: infinite; }
+  .gal-row.left  { animation-name: scrollLeft; }
+  .gal-row.right { animation-name: scrollRight; }
+  .g-card { width: 96px; aspect-ratio: 9/16; border-radius: 11px; overflow: hidden; flex-shrink: 0; position: relative; background: #111; }
+  .g-card video { width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+  .g-card::after { content:""; position:absolute; inset:0; background: linear-gradient(to top, rgba(0,0,0,.35), transparent 60%); }
+  .gallery.blurred .g-card video { filter: blur(6px); transform: scale(1.12); }
+  @keyframes scrollLeft  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  @keyframes scrollRight { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+
+  .login-bottom input {
+    width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 14px; padding: 15px 18px; color: var(--text); font-size: 15px; outline: none; margin-bottom: 12px;
+  }
+  .login-bottom input::placeholder { color: var(--text-dim); }
+  .login-bottom input:focus { border-color: rgba(255,100,130,.5); }
+  .login-bottom .enter { width: 100%; background: linear-gradient(90deg, #ff1414, #cc0000); border: none; color: #fff; padding: 15px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 28px rgba(255,0,0,.3); }
+  .login-bottom .age { font-size: 11px; color: rgba(255,255,255,.42); margin-top: 14px; line-height: 1.5; }
+  .login-bottom .age b { color: rgba(255,255,255,.7); }
+
+  @media (max-width: 800px) {
+    body { gap: 0; padding: 0; }
+    .legend { display: none; }
+    .phone { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+    .notch { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="likeGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff2d55"/>
+        <stop offset="100%" stop-color="#ff6482"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <aside class="legend">
+    <div class="tag">Mockup · v3</div>
+    <h1>TKTK P🔞RN</h1>
+    <p>Login com galeria que rola sozinha, feed com botões centralizados, share por seta.</p>
+    <ul>
+      <li>⌂<span><b>Nome fixo</b> no topo</li>
+      <li>🎞<span><b>Login</b> com galeria horizontal automática</li>
+      <li>🔊<span><b>1º vídeo</b>: toque ativa som → resto com áudio</li>
+      <li>↗<span><b>Share por seta</b> (WhatsApp / link)</li>
+      <li>⬍<span><b>Botões centralizados</b> na vertical</li>
+      <li>🔒<span><b>Paywall</b> após X vídeos grátis</li>
+    </ul>
+    <div class="demo-btns">
+      <button onclick="window.demoComments()">Abrir comentários</button>
+      <button onclick="window.demoShare()">Abrir compartilhar</button>
+      <button onclick="window.demoPaywall()">Mostrar paywall</button>
+      <button onclick="window.demoLogin()">Voltar ao login</button>
+      <button onclick="window.toggleBlur()">Embaçar galeria (on/off)</button>
+    </div>
+  </aside>
+
+  <div class="phone">
+    <div class="notch"></div>
+
+    <!-- LOGIN -->
+    <div class="login" id="login">
+      <div class="login-top">
+        <div class="logo-text logo-big"><span class="tk">TKTK </span><span class="pn">P🔞RN</span></div>
+        <div class="tagline">Acesso exclusivo · conteúdo +18</div>
+      </div>
+
+      <div class="gallery" id="gallery"></div>
+
+      <div class="login-bottom">
+        <input type="email" id="loginEmail" placeholder="Digite o e-mail da sua compra" />
+        <button class="enter" onclick="window.doLogin()">Entrar</button>
+        <div class="age">Conteúdo destinado a <b>maiores de 18 anos</b>.<br/>Ao entrar, você confirma ter 18+.</div>
+      </div>
+    </div>
+
+    <!-- TOPO -->
+    <div class="brand"><span class="logo-text" style="font-size:18px"><span class="tk">TKTK </span><span class="pn">P🔞RN</span></span></div>
+
+    <!-- FEED -->
+    <div class="feed" id="feed"></div>
+
+    <!-- BOTTOM SHEET -->
+    <div class="sheet-backdrop" id="sheetBackdrop" onclick="window.closeSheet()"></div>
+    <div class="sheet" id="sheet">
+      <div class="grab"></div>
+      <div class="sheet-head" id="sheetHead">Comentários</div>
+      <div id="sheetBody"></div>
+    </div>
+
+    <!-- PAYWALL -->
+    <div class="paywall" id="paywall">
+      <div class="lock">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2>Continue assistindo</h2>
+      <p>Você viu seus vídeos gratuitos. Assine para ter acesso ilimitado a todo o conteúdo.</p>
+      <button class="cta">Liberar acesso completo</button>
+      <button class="ghost" onclick="window.closePaywall()">Agora não</button>
+    </div>
+  </div>
+
+<script>
+  const HEART = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  const COMMENT = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
+  /* SHARE de volta para SETA (estilo enviar) */
+  const SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+  const SOUND = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+  const WA = `<svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.42-.14 0-.31-.02-.47-.02-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>`;
+  const LINK = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+  const FREE_LIMIT = 3;
+
+  const SAMPLES = [
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+  ];
+
+  const videos = [
+    { src: SAMPLES[0], name: "Marina Sttudio", caption: "Bastidores do ensaio de hoje ✨", likes: 1240,
+      comments: [["Júlia","Perfeita 😍"],["Bruno","Que produção!"],["Ana","Amei"]] },
+    { src: SAMPLES[1], name: "Lia Reels", caption: "Conteúdo novo toda semana ☀️", likes: 812,
+      comments: [["Carla","🔥"],["Pedro","Top demais"]] },
+    { src: SAMPLES[2], name: "Júlia Costa", caption: "Nota de 0 a 10? 🔥", likes: 2270,
+      comments: [["Rafa","10"],["Bia","💎"],["Léo","🔥🔥🔥"]] },
+    { src: SAMPLES[3], name: "Manu Vibes", caption: "Exclusivo pra assinantes ✈️", likes: 1530,
+      comments: [["Duda","quero mais!"]] },
+  ];
+
+  /* ---------- Galeria do login — 3 fileiras horizontais (velocidades diferentes) ---------- */
+  let LOGIN_BLUR = true; // liga/desliga o embaçado dos vídeos do login
+  const GAL_ROWS = 3;
+  const GAL_SPEEDS = [62, 80, 70]; // segundos por fileira (todas lentas, mas diferentes entre si)
+
+  function buildGallery(){
+    const gallery = document.getElementById("gallery");
+    let html = "";
+    for (let r = 0; r < GAL_ROWS; r++){
+      const dir = r % 2 === 0 ? "left" : "right";
+      const shuffled = [...SAMPLES].sort(() => Math.random() - 0.5);
+      const cards = [...shuffled, ...shuffled, ...shuffled, ...shuffled].map(src =>
+        `<div class="g-card"><video src="${src}" muted loop autoplay playsinline preload="metadata"></video></div>`
+      ).join("");
+      html += `<div class="gal-row ${dir}" style="animation-duration:${GAL_SPEEDS[r]}s">${cards}</div>`;
+    }
+    gallery.innerHTML = html;
+    gallery.classList.toggle("blurred", LOGIN_BLUR);
+  }
+  buildGallery();
+
+  window.toggleBlur = () => {
+    LOGIN_BLUR = !LOGIN_BLUR;
+    document.getElementById("gallery").classList.toggle("blurred", LOGIN_BLUR);
+  };
+
+  /* ---------- Feed ---------- */
+  const feed = document.getElementById("feed");
+  let audioUnlocked = false, activeIndex = 0;
+  const fmt = n => n >= 1000 ? (n/1000).toFixed(1).replace('.0','')+'k' : n;
+
+  videos.forEach((v, i) => {
+    const slide = document.createElement("div");
+    slide.className = "slide"; slide.dataset.index = i;
+    slide.innerHTML = `
+      <video src="${v.src}" loop playsinline preload="${i===0?'auto':'metadata'}"></video>
+      <div class="meta"><div class="name">${v.name}</div><div class="caption">${v.caption}</div></div>
+      <div class="rail">
+        <div class="action like"><div class="btn">${HEART}</div><span class="count">${fmt(v.likes)}</span></div>
+        <div class="action act-comment"><div class="btn">${COMMENT}</div><span class="count">${v.comments.length}</span></div>
+        <div class="action act-share"><div class="btn">${SHARE}</div><span class="count">Enviar</span></div>
+      </div>
+      <div class="progress"><div class="fill"></div></div>
+      ${i===0 ? `
+        <div class="audio-gate" id="audioGate"><div class="ring">${SOUND}</div><p>Toque para ativar o som</p></div>
+        <div class="hint">deslize para cima ↑</div>` : ``}
+    `;
+    feed.appendChild(slide);
+  });
+  const slides = [...document.querySelectorAll(".slide")];
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const vid = entry.target.querySelector("video");
+      const idx = +entry.target.dataset.index;
+      if (entry.isIntersecting) {
+        activeIndex = idx;
+        if (idx >= FREE_LIMIT && !window._hasAccess) openPaywall();
+        vid.muted = !audioUnlocked;
+        vid.play().catch(()=>{});
+      } else { vid.pause(); }
+    });
+  }, { threshold: 0.6 });
+  slides.forEach(s => observer.observe(s));
+
+  slides.forEach(s => {
+    const vid = s.querySelector("video"); const fill = s.querySelector(".progress .fill");
+    vid.addEventListener("timeupdate", () => { if (vid.duration) fill.style.width = (vid.currentTime/vid.duration*100)+"%"; });
+  });
+
+  const audioGate = document.getElementById("audioGate");
+  audioGate.addEventListener("click", () => {
+    audioUnlocked = true; const vid = slides[activeIndex].querySelector("video");
+    vid.muted = false; vid.play().catch(()=>{}); audioGate.classList.add("hidden");
+  });
+
+  function toggleLike(a){ a.classList.toggle("liked"); }
+  slides.forEach(s => {
+    s.querySelector(".action.like").addEventListener("click", () => toggleLike(s.querySelector(".action.like")));
+    s.addEventListener("dblclick", () => { const a = s.querySelector(".action.like"); if (!a.classList.contains("liked")) toggleLike(a); });
+  });
+
+  const backdrop = document.getElementById("sheetBackdrop"), sheet = document.getElementById("sheet");
+  const sheetHead = document.getElementById("sheetHead"), sheetBody = document.getElementById("sheetBody");
+  function openSheet(){ backdrop.classList.add("open"); sheet.classList.add("open"); }
+  window.closeSheet = () => { backdrop.classList.remove("open"); sheet.classList.remove("open"); };
+
+  function renderComments(idx){
+    const v = videos[idx]; sheetHead.textContent = `${v.comments.length} comentários`;
+    sheetBody.innerHTML = `
+      <div class="comments">${v.comments.map(c => `<div class="comment"><span class="c-name">${c[0]}</span><span class="c-text">${c[1]}</span></div>`).join("")}</div>
+      <div class="comment-input"><input id="commentField" placeholder="Adicione um comentário..." /><button onclick="window.sendComment(${idx})">Enviar</button></div>`;
+  }
+  window.sendComment = (idx) => {
+    const f = document.getElementById("commentField"); const t = f.value.trim(); if(!t) return;
+    videos[idx].comments.unshift(["Você", t]); renderComments(idx);
+    slides[idx].querySelector(".act-comment .count").textContent = videos[idx].comments.length;
+  };
+  function renderShare(){
+    sheetHead.textContent = "Compartilhar";
+    sheetBody.innerHTML = `
+      <div class="share-opts">
+        <div class="share-opt"><div class="ic wa">${WA}</div><div>WhatsApp<small>Enviar para conversa ou status</small></div></div>
+        <div class="share-opt"><div class="ic link">${LINK}</div><div>Copiar link<small>Link direto para este vídeo</small></div></div>
+      </div>`;
+  }
+  slides.forEach((s, idx) => {
+    s.querySelector(".act-comment").addEventListener("click", () => { renderComments(idx); openSheet(); });
+    s.querySelector(".act-share").addEventListener("click", () => { renderShare(); openSheet(); });
+  });
+
+  const paywall = document.getElementById("paywall");
+  function openPaywall(){ paywall.classList.add("open"); slides[activeIndex].querySelector("video").pause(); }
+  window.closePaywall = () => paywall.classList.remove("open");
+
+  const login = document.getElementById("login");
+  window.doLogin = () => {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    window._hasAccess = email.includes("vip") || email.includes("pago");
+    login.classList.add("hidden");
+  };
+
+  window.demoComments = () => { renderComments(activeIndex); openSheet(); };
+  window.demoShare = () => { renderShare(); openSheet(); };
+  window.demoPaywall = () => openPaywall();
+  window.demoLogin = () => { login.classList.remove("hidden"); window.closeSheet(); window.closePaywall(); };
+</script>
+</body>
+</html>

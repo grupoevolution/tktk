@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent-1: #ff0d0d;
+  --accent-2: #ff4d4d;
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: #050506;
+  color: #fff;
+  overscroll-behavior: none;
+}
+
+/* Logo TKTK P🔞RN ---------------------------------- */
+.logo-text { font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; }
+.logo-text .tk { color: #fff; text-shadow: -2px -1px 0 #25f4ee, 2px 1px 0 #fe2c55; }
+.logo-text .pn { color: #ff0d0d; text-shadow: 0 0 22px rgba(255, 20, 20, 0.6); }
+
+/* Esconder scrollbar -------------------------------- */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Like pop ------------------------------------------ */
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.like-pop { animation: pop 0.35s ease; }
+
+/* Galeria do login (3 fileiras horizontais) --------- */
+.gallery-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+.gal-row { display: flex; gap: 8px; width: max-content; animation-timing-function: linear; animation-iteration-count: infinite; }
+.gal-row.left { animation-name: scrollLeft; }
+.gal-row.right { animation-name: scrollRight; }
+@keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+/* Bottom sheet -------------------------------------- */
+.sheet { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.sheet.open { transform: translateY(0); }
+
+/* Audio gate breathe -------------------------------- */
+@keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.08); opacity: 1; } }
+.breathe { animation: breathe 2s ease-in-out infinite; }
+
+/* Scroll hint bob ----------------------------------- */
+@keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 6px); } }
+.bob { animation: bob 1.6s ease-in-out infinite; }
