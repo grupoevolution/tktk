@@ -4,8 +4,6 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 
-# Variáveis públicas precisam ser declaradas como ARG para serem
-# injetadas pelo EasyPanel durante o build e embutidas no bundle Next.js
 ARG NEXT_PUBLIC_APP_NAME
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_CHECKOUT_URL
@@ -19,16 +17,19 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    mkdir -p /app/data && chown nextjs:nodejs /app/data
+# su-exec permite trocar de usuário sem shell extra (equivalente ao gosu)
+RUN apk add --no-cache su-exec && \
+    addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Roda como root para poder ajustar permissão do volume, depois troca para nextjs
+ENTRYPOINT ["/entrypoint.sh"]
