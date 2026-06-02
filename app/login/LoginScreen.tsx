@@ -4,20 +4,13 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/icons";
 
-type Item = { src: string | null; thumb: string | null };
+type Item = { src: string | null; thumb: string | null; blur: boolean };
 
 const ROWS = 3;
-const SPEEDS = [62, 80, 70]; // segundos por fileira (todas lentas, diferentes entre si)
+const SPEEDS = [28, 38, 32]; // segundos — mais rápido e diferente entre fileiras
 
-function shuffle<T>(arr: T[]): T[] {
-  return arr
-    .map((v) => [Math.random(), v] as const)
-    .sort((a, b) => a[0] - b[0])
-    .map(([, v]) => v);
-}
-
-function GalleryCard({ item, blur }: { item: Item; blur: boolean }) {
-  const cls = `w-full h-full object-cover ${blur ? "blur-[6px] scale-110" : ""}`;
+function GalleryCard({ item }: { item: Item }) {
+  const cls = `w-full h-full object-cover ${item.blur ? "blur-[8px] scale-110" : ""}`;
   return (
     <div className="w-24 aspect-[9/16] rounded-xl overflow-hidden bg-neutral-900 shrink-0 relative">
       {item.thumb ? (
@@ -25,17 +18,26 @@ function GalleryCard({ item, blur }: { item: Item; blur: boolean }) {
         <img src={item.thumb} alt="" className={cls} />
       ) : item.src ? (
         <video src={item.src} muted loop autoPlay playsInline preload="metadata" className={cls} />
-      ) : null}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
+      ) : (
+        <div className="w-full h-full bg-neutral-800" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
     </div>
   );
 }
 
+// Gera fileiras com itens repetidos o suficiente para o loop ser seamless
+function buildRow(items: Item[]): Item[] {
+  const base = items.length ? items : [{ src: null, thumb: null, blur: false }];
+  // repete até ter pelo menos 12 itens, depois duplica para o loop
+  const copies = Math.ceil(12 / base.length);
+  const filled = Array.from({ length: copies }, () => base).flat();
+  return [...filled, ...filled]; // dobra: primeira metade visível, segunda cria o loop
+}
+
 export default function LoginScreen({
-  loginBlur,
   galleryItems,
 }: {
-  loginBlur: boolean;
   galleryItems: Item[];
 }) {
   const router = useRouter();
@@ -44,11 +46,11 @@ export default function LoginScreen({
   const [loading, setLoading] = useState(false);
 
   const rows = useMemo(() => {
-    const base = galleryItems.length ? galleryItems : [{ src: null, thumb: null }];
-    return Array.from({ length: ROWS }, () => {
-      const s = shuffle(base);
-      // repete para preencher a largura e permitir loop contínuo
-      return [...s, ...s, ...s, ...s];
+    const shuffled = [...galleryItems].sort(() => Math.random() - 0.5);
+    return Array.from({ length: ROWS }, (_, i) => {
+      const offset = Math.floor((i * shuffled.length) / ROWS);
+      const rotated = [...shuffled.slice(offset), ...shuffled.slice(0, offset)];
+      return buildRow(rotated);
     });
   }, [galleryItems]);
 
@@ -84,7 +86,7 @@ export default function LoginScreen({
             style={{ animationDuration: `${SPEEDS[r]}s` }}
           >
             {items.map((item, i) => (
-              <GalleryCard key={i} item={item} blur={loginBlur} />
+              <GalleryCard key={i} item={item} />
             ))}
           </div>
         ))}

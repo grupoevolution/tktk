@@ -1,6 +1,7 @@
 import { currentEmail } from "@/lib/auth";
+import { hasFullAccess } from "@/lib/auth";
 import { getSettings } from "@/lib/config";
-import { listPublishedVideos, isBuyer } from "@/lib/db";
+import { listPublishedVideos, listLoginVideos } from "@/lib/db";
 import LoginScreen from "./login/LoginScreen";
 import Feed from "./feed/Feed";
 
@@ -11,15 +12,19 @@ export default async function Home() {
   const settings = getSettings();
 
   if (!email) {
-    const videos = await listPublishedVideos().catch(() => []);
-    const galleryItems = videos.map((v) => ({ src: v.hlsUrl, thumb: v.thumbnailUrl }));
-    return <LoginScreen loginBlur={settings.loginBlur} galleryItems={galleryItems} />;
+    const loginVideos = await listLoginVideos().catch(() => []);
+    const galleryItems = loginVideos.map((v) => ({
+      src: v.hlsUrl,
+      thumb: v.thumbnailUrl,
+      blur: v.blurInLogin,
+    }));
+    return <LoginScreen galleryItems={galleryItems} />;
   }
 
-  const [videos, hasAccess] = await Promise.all([
+  const [videos, access] = await Promise.all([
     listPublishedVideos().catch(() => []),
-    isBuyer(email).catch(() => false),
+    hasFullAccess(email).catch(() => false),
   ]);
 
-  return <Feed videos={videos} hasAccess={hasAccess} freeLimit={settings.freeLimit} />;
+  return <Feed videos={videos} hasAccess={access} freeLimit={settings.freeLimit} />;
 }

@@ -3,10 +3,6 @@ import path from "path";
 import { bunnyUrls } from "./bunny";
 import type { Video, Comment } from "./types";
 
-// ============================================================================
-// Persistência em arquivo JSON — /app/data (montado como volume no EasyPanel)
-// Em desenvolvimento usa ./data na raiz do projeto
-// ============================================================================
 const DATA_DIR =
   process.env.DATA_DIR ||
   (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
@@ -14,9 +10,7 @@ const DATA_DIR =
 function ensureDir() {
   try {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  } catch {
-    // diretório já existe ou sem permissão — continua sem crash
-  }
+  } catch {}
 }
 
 function readJson<T>(file: string, fallback: T): T {
@@ -34,9 +28,7 @@ function writeJson(file: string, data: unknown) {
   try {
     ensureDir();
     fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), "utf-8");
-  } catch {
-    // sem permissão de escrita — falha silenciosa (modo somente-leitura)
-  }
+  } catch {}
 }
 
 type DB = {
@@ -48,7 +40,11 @@ type DB = {
 
 function load(): DB {
   return {
-    videos: readJson("videos.json", []),
+    videos: readJson<Video[]>("videos.json", []).map((v) => ({
+      ...v,
+      showInLogin: v.showInLogin ?? false,
+      blurInLogin: v.blurInLogin ?? true,
+    })),
     likes: readJson("likes.json", []),
     comments: readJson("comments.json", {}),
     buyers: readJson("buyers.json", {}),
@@ -68,6 +64,13 @@ export async function listPublishedVideos(): Promise<Video[]> {
       likes: likes.filter((k) => k.startsWith(v.id + ":")).length,
       commentsCount: (comments[v.id] || []).length,
     }));
+}
+
+export async function listLoginVideos(): Promise<Video[]> {
+  const { videos } = load();
+  return videos
+    .filter((v) => v.showInLogin)
+    .sort((a, b) => a.position - b.position);
 }
 
 export async function listAllVideos(): Promise<Video[]> {
@@ -90,6 +93,8 @@ export async function createVideo(input: {
   thumbnailUrl: string | null;
   position: number;
   published: boolean;
+  showInLogin: boolean;
+  blurInLogin: boolean;
 }): Promise<Video> {
   const { videos } = load();
   const { hlsUrl: bunnyHls, thumbnailUrl: bunnyThumb } = bunnyUrls(input.bunnyVideoId);
@@ -108,7 +113,14 @@ export async function createVideo(input: {
 
 export async function updateVideo(
   id: string,
-  patch: Partial<{ caption: string; creatorName: string; position: number; published: boolean }>
+  patch: Partial<{
+    caption: string;
+    creatorName: string;
+    position: number;
+    published: boolean;
+    showInLogin: boolean;
+    blurInLogin: boolean;
+  }>
 ): Promise<void> {
   const { videos } = load();
   const v = videos.find((x) => x.id === id);

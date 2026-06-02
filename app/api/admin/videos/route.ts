@@ -25,6 +25,8 @@ export async function POST(req: Request) {
   const hlsUrlInput = body.hlsUrl ? String(body.hlsUrl).trim() : null;
   const position = Number(body.position || 0);
   const published = body.published !== false;
+  const showInLogin = !!body.showInLogin;
+  const blurInLogin = body.blurInLogin !== false;
 
   if (!creatorName) return NextResponse.json({ error: "Informe o nome do creator" }, { status: 400 });
   if (!bunnyVideoId && !hlsUrlInput) {
@@ -40,6 +42,8 @@ export async function POST(req: Request) {
     thumbnailUrl,
     position,
     published,
+    showInLogin,
+    blurInLogin,
   });
   return NextResponse.json({ video });
 }
@@ -55,6 +59,8 @@ export async function PATCH(req: Request) {
     creatorName: body.creatorName,
     position: body.position !== undefined ? Number(body.position) : undefined,
     published: body.published,
+    showInLogin: body.showInLogin,
+    blurInLogin: body.blurInLogin,
   });
   return NextResponse.json({ ok: true });
 }

@@ -7,6 +7,8 @@ export type Video = {
   thumbnailUrl: string | null;
   position: number;
   published: boolean;
+  showInLogin: boolean;
+  blurInLogin: boolean;
   likes: number;
   commentsCount: number;
 };
