@@ -16,6 +16,7 @@ export default async function Home() {
     const galleryItems = loginVideos.map((v) => ({
       src: v.hlsUrl,
       thumb: v.thumbnailUrl,
+      blur: v.blurInLogin,
     }));
     return <LoginScreen galleryItems={galleryItems} />;
   }

@@ -4,7 +4,7 @@ import { useRef, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/icons";
 
-type Item = { src: string | null; thumb: string | null };
+type Item = { src: string | null; thumb: string | null; blur?: boolean };
 
 const ROWS = 3;
 const SPEEDS = [28, 38, 32];
@@ -18,7 +18,7 @@ function GalleryCard({ item }: { item: Item }) {
     if (v && v.currentTime >= LOOP_SECONDS) v.currentTime = 0;
   }
 
-  const cls = "w-full h-full object-cover blur-[8px] scale-110";
+  const cls = `w-full h-full object-cover ${item.blur !== false ? "blur-[8px] scale-110" : ""}`;
 
   return (
     <div className="w-24 aspect-[9/16] rounded-xl overflow-hidden bg-neutral-900 shrink-0 relative">

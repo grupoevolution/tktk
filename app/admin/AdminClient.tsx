@@ -56,6 +56,7 @@ const emptyForm = {
   thumbnailUrl: "",
   published: true,
   showInLogin: false,
+  blurInLogin: true,
 };
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -90,6 +91,7 @@ function AdminPanel() {
       thumbnailUrl: v.thumbnailUrl || "",
       published: v.published,
       showInLogin: v.showInLogin,
+      blurInLogin: v.blurInLogin,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -127,7 +129,7 @@ function AdminPanel() {
     load();
   }
 
-  async function toggleField(v: Video, field: "published" | "showInLogin") {
+  async function toggleField(v: Video, field: "published" | "showInLogin" | "blurInLogin") {
     await fetch("/api/admin/videos", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -187,6 +189,9 @@ function AdminPanel() {
             <div className="flex items-center gap-4 flex-wrap">
               <Check label="Publicado no feed" checked={form.published} onChange={(v) => f("published", v)} />
               <Check label="Mostrar na tela de login" checked={form.showInLogin} onChange={(v) => f("showInLogin", v)} />
+              {form.showInLogin && (
+                <Check label="Embaçar no login" checked={(form as any).blurInLogin} onChange={(v) => f("blurInLogin", v)} />
+              )}
             </div>
 
             {error && <p className="text-accent text-[13px]">{error}</p>}
@@ -239,6 +244,14 @@ function AdminPanel() {
                 >
                   {v.showInLogin ? "✓ No login" : "Oculto do login"}
                 </button>
+                {v.showInLogin && (
+                  <button
+                    onClick={() => toggleField(v, "blurInLogin")}
+                    className={`text-xs px-3 py-1 rounded-full border transition ${v.blurInLogin ? "border-yellow-400/40 text-yellow-400 bg-yellow-500/10" : "border-white/20 text-dim"}`}
+                  >
+                    {v.blurInLogin ? "Embaçado" : "Sem blur"}
+                  </button>
+                )}
               </div>
 
               <div className="flex gap-2">
