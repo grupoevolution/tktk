@@ -72,6 +72,15 @@ export default function Feed({
     scrollToIndex(Math.max(0, freeLimit - 1));
   }
 
+  if (videos.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-[#050506] flex flex-col items-center justify-center gap-4 text-center px-6">
+        <Logo className="text-2xl" />
+        <p className="text-white/50 text-sm mt-2">Nenhum vídeo disponível ainda.<br />Volte em breve.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black">
       {/* nome fixo no topo */}
@@ -86,7 +95,7 @@ export default function Feed({
         style={{ scrollSnapType: "y mandatory" }}
       >
         {videos.map((v, i) => (
-          <div key={v.id} data-idx={i} ref={(el) => { slideRefs.current[i] = el; }} className="h-full w-full">
+          <div key={v.id} data-idx={i} ref={(el) => { slideRefs.current[i] = el; }} className="h-full w-full snap-start">
             <VideoSlide
               video={{ ...v, commentsCount: commentCounts[v.id] ?? v.commentsCount }}
               active={i === active && !paywall}

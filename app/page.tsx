@@ -9,16 +9,17 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const email = currentEmail();
   const settings = getSettings();
-  const videos = await listPublishedVideos();
 
   if (!email) {
-    const galleryItems = videos.map((v) => ({
-      src: v.hlsUrl,
-      thumb: v.thumbnailUrl,
-    }));
+    const videos = await listPublishedVideos().catch(() => []);
+    const galleryItems = videos.map((v) => ({ src: v.hlsUrl, thumb: v.thumbnailUrl }));
     return <LoginScreen loginBlur={settings.loginBlur} galleryItems={galleryItems} />;
   }
 
-  const hasAccess = await isBuyer(email);
+  const [videos, hasAccess] = await Promise.all([
+    listPublishedVideos().catch(() => []),
+    isBuyer(email).catch(() => false),
+  ]);
+
   return <Feed videos={videos} hasAccess={hasAccess} freeLimit={settings.freeLimit} />;
 }

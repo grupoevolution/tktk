@@ -7,17 +7,23 @@ import type { Video, Comment } from "./types";
 // Persistência em arquivo JSON — /app/data (montado como volume no EasyPanel)
 // Em desenvolvimento usa ./data na raiz do projeto
 // ============================================================================
-const DATA_DIR = process.env.DATA_DIR || (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
+const DATA_DIR =
+  process.env.DATA_DIR ||
+  (process.env.NODE_ENV === "production" ? "/app/data" : path.join(process.cwd(), "data"));
 
 function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch {
+    // diretório já existe ou sem permissão — continua sem crash
+  }
 }
 
 function readJson<T>(file: string, fallback: T): T {
-  ensureDir();
-  const p = path.join(DATA_DIR, file);
-  if (!fs.existsSync(p)) return fallback;
   try {
+    ensureDir();
+    const p = path.join(DATA_DIR, file);
+    if (!fs.existsSync(p)) return fallback;
     return JSON.parse(fs.readFileSync(p, "utf-8")) as T;
   } catch {
     return fallback;
@@ -25,18 +31,18 @@ function readJson<T>(file: string, fallback: T): T {
 }
 
 function writeJson(file: string, data: unknown) {
-  ensureDir();
-  fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), "utf-8");
+  try {
+    ensureDir();
+    fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), "utf-8");
+  } catch {
+    // sem permissão de escrita — falha silenciosa (modo somente-leitura)
+  }
 }
 
-// Tipos dos arquivos de dados
 type DB = {
   videos: Video[];
-  // likes: Set serializado como array de strings "videoId:email"
   likes: string[];
-  // comments: mapa videoId -> Comment[]
   comments: Record<string, Comment[]>;
-  // buyers: mapa email -> "active" | "refunded"
   buyers: Record<string, "active" | "refunded">;
 };
 
@@ -86,7 +92,6 @@ export async function createVideo(input: {
   published: boolean;
 }): Promise<Video> {
   const { videos } = load();
-
   const { hlsUrl: bunnyHls, thumbnailUrl: bunnyThumb } = bunnyUrls(input.bunnyVideoId);
   const v: Video = {
     id: String(Date.now()),
@@ -165,7 +170,11 @@ export async function isBuyer(email: string): Promise<boolean> {
   return buyers[e] === "active";
 }
 
-export async function upsertBuyer(email: string, status: "active" | "refunded", _orderId?: string): Promise<void> {
+export async function upsertBuyer(
+  email: string,
+  status: "active" | "refunded",
+  _orderId?: string
+): Promise<void> {
   const e = email.toLowerCase().trim();
   const { buyers } = load();
   buyers[e] = status;
